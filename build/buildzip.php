@@ -49,6 +49,7 @@ $listOfModuleContent = [
 	'*.json',
 	'*.php',
 	'modulebuilder.txt',
+	'VERSION',
 ];
 
 /**
