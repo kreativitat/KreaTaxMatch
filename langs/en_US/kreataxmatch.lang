@@ -21,6 +21,24 @@ KreaTaxMatchCronLookbackDaysHelp=The daily cron downloads this number of recent 
 KreaTaxMatchErrorInvalidNif=The AT NIF must contain exactly 9 digits.
 KreaTaxMatchErrorInvalidCronLookbackDays=Lookback days must be between 1 and 31.
 KreaTaxMatchAboutTitle=About KreaTaxMatch
+KreaTaxMatchAboutContextWhatLabel=What this module does
+KreaTaxMatchAboutContextWhatValue=KreaTaxMatch is a fiscal reconciliation workspace for Dolibarr. It downloads AT e-Fatura purchase records, keeps them in a controlled staging layer, and guides users through safe reconciliation against native supplier invoices.
+KreaTaxMatchAboutContextGoalLabel=Objective in plain language
+KreaTaxMatchAboutContextGoalValue=In simple terms, KreaTaxMatch helps the finance team understand what each AT purchase line corresponds to in Dolibarr and decide whether it should be matched automatically, reviewed manually, or kept pending until the underlying supplier document is corrected.
+KreaTaxMatchAboutContextUseLabel=What it is for
+KreaTaxMatchAboutContextUseValue=Use it when AT purchase data must be reconciled in a controlled way with supplier invoices, manual review queues, discrepancy handling, and auditability without bypassing Dolibarr native supplier accounting flows.
+KreaTaxMatchAboutContextCapabilitiesLabel=Core capabilities
+KreaTaxMatchAboutCapability1=Download and store AT e-Fatura purchase records for selected periods with deduplication and daily refresh support.
+KreaTaxMatchAboutCapability2=Match AT rows against Dolibarr supplier invoices using supplier VAT, supplier reference, date, and amount with discrepancy detection.
+KreaTaxMatchAboutCapability3=Preserve manual matches and operator notes so unresolved or exceptional cases remain reviewable without corrupting native invoice data.
+KreaTaxMatchAboutCapability4=Highlight missing, manual, matched, and discrepancy states so operators can work through the reconciliation queue safely.
+KreaTaxMatchAboutModuleLabel=Module
+KreaTaxMatchAboutVersionLabel=Version
+KreaTaxMatchAboutEditorLabel=Editor
+KreaTaxMatchAboutLicenseLabel=License
+KreaTaxMatchAboutLicenseValue=GPL-3.0-or-later (commercial support available on request)
+KreaTaxMatchAboutSupportLabel=Support
+KreaTaxMatchAboutWebsiteLabel=Website
 
 # Dashboard (Invoice Matches)
 KreaTaxMatchDashboardTitle=KreaTaxMatch Invoice Reconciliation

@@ -38,7 +38,7 @@ class modKreaTaxMatch extends DolibarrModules
 		$this->descriptionlong = 'ModuleKreaTaxMatchDescLong';
 		$this->editor_name = 'Kreativität Works';
 		$this->editor_url = 'https://kreativitat.com';
-		$this->version = '1.5.12';
+		$this->version = '1.5.15';
 		$this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
 		$this->picto = 'supplier_invoice';
 

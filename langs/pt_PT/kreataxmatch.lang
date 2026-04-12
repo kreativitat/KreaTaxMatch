@@ -21,6 +21,24 @@ KreaTaxMatchCronLookbackDaysHelp=O cron diário descarrega este número de dias 
 KreaTaxMatchErrorInvalidNif=O NIF AT deve ter exatamente 9 dígitos.
 KreaTaxMatchErrorInvalidCronLookbackDays=Os dias de retroatividade devem estar entre 1 e 31.
 KreaTaxMatchAboutTitle=Sobre o KreaTaxMatch
+KreaTaxMatchAboutContextWhatLabel=O que este módulo faz
+KreaTaxMatchAboutContextWhatValue=O KreaTaxMatch é um espaço de reconciliação fiscal para o Dolibarr. Descarrega registos de compras do AT e-Fatura, mantém-nos numa camada de staging controlada e orienta os utilizadores numa reconciliação segura com as faturas de fornecedor nativas.
+KreaTaxMatchAboutContextGoalLabel=Objetivo em linguagem simples
+KreaTaxMatchAboutContextGoalValue=Em termos simples, o KreaTaxMatch ajuda a equipa financeira a perceber a que corresponde cada linha de compra AT no Dolibarr e a decidir se deve ser conciliada automaticamente, revista manualmente ou mantida pendente até o documento de fornecedor estar correto.
+KreaTaxMatchAboutContextUseLabel=Para que serve
+KreaTaxMatchAboutContextUseValue=Use-o quando os dados de compras da AT precisam de ser reconciliados de forma controlada com faturas de fornecedor, filas de revisão manual, tratamento de discrepâncias e rastreabilidade sem contornar os fluxos nativos de contabilidade de fornecedores do Dolibarr.
+KreaTaxMatchAboutContextCapabilitiesLabel=Capacidades principais
+KreaTaxMatchAboutCapability1=Descarregar e guardar registos de compras AT e-Fatura para períodos selecionados com deduplicação e suporte de atualização diária.
+KreaTaxMatchAboutCapability2=Conciliar linhas AT com faturas de fornecedor do Dolibarr usando NIF do fornecedor, referência do fornecedor, data e valor com deteção de discrepâncias.
+KreaTaxMatchAboutCapability3=Preservar correspondências manuais e notas do operador para que casos por resolver ou excecionais continuem auditáveis sem corromper os dados nativos das faturas.
+KreaTaxMatchAboutCapability4=Destacar estados de falta, manual, correspondente e discrepância para que os operadores tratem a fila de reconciliação com segurança.
+KreaTaxMatchAboutModuleLabel=Módulo
+KreaTaxMatchAboutVersionLabel=Versão
+KreaTaxMatchAboutEditorLabel=Editor
+KreaTaxMatchAboutLicenseLabel=Licença
+KreaTaxMatchAboutLicenseValue=GPL-3.0-or-later (contacte-nos para suporte comercial)
+KreaTaxMatchAboutSupportLabel=Suporte
+KreaTaxMatchAboutWebsiteLabel=Website
 
 # Dashboard (Invoice Matches)
 KreaTaxMatchDashboardTitle=Reconciliação de Faturas KreaTaxMatch
