@@ -1,0 +1,84 @@
+# Generic
+ModuleKreaTaxMatchName=KreaTaxMatch
+ModuleKreaTaxMatchDesc=Automatiza a reconciliação entre registos de compras da AT (e-Fatura) e faturas de fornecedor no Dolibarr.
+ModuleKreaTaxMatchDescLong=O KreaTaxMatch autentica no e-Fatura da AT, descarrega documentos de compra para um período selecionado, guarda os dados com deduplicação, cruza com faturas de fornecedor do Dolibarr por NIF do fornecedor e referência do fornecedor, destaca discrepâncias, preserva correspondências manuais e suporta sincronização diária por cron.
+KreaTaxMatchMenu=Conciliação Fiscal
+KreaTaxMatchInvoiceTab=Correspondências de Faturas
+KreaTaxMatchDownloadTab=Descarga de Dados
+KreaTaxMatchDocumentsTab=Documentos AT
+KreaTaxMatchDailySyncJob=Sincronização Diária e-Fatura KreaTaxMatch
+
+# Setup / admin
+KreaTaxMatchSetupTitle=Configuração KreaTaxMatch
+KreaTaxMatchAtCredentials=Credenciais AT (e-Fatura)
+KreaTaxMatchAtNif=NIF AT
+KreaTaxMatchAtNifHelp=NIF português usado para autenticação no e-Fatura.
+KreaTaxMatchAtPassword=Palavra-passe AT
+KreaTaxMatchAtPasswordHelp=Deixe vazio para manter a palavra-passe atual.
+KreaTaxMatchPasswordConfigured=Palavra-passe configurada: %s
+KreaTaxMatchCronLookbackDays=Dias de retroatividade do cron
+KreaTaxMatchCronLookbackDaysHelp=O cron diário descarrega este número de dias recentes para manter os dados atualizados sem duplicações.
+KreaTaxMatchErrorInvalidNif=O NIF AT deve ter exatamente 9 dígitos.
+KreaTaxMatchErrorInvalidCronLookbackDays=Os dias de retroatividade devem estar entre 1 e 31.
+KreaTaxMatchAboutTitle=Sobre o KreaTaxMatch
+
+# Dashboard (Invoice Matches)
+KreaTaxMatchDashboardTitle=Reconciliação de Faturas KreaTaxMatch
+KreaTaxMatchFilterTitle=Filtro de Data das Faturas
+KreaTaxMatchStatusMatched=Correspondente
+KreaTaxMatchStatusManual=Manual
+KreaTaxMatchStatusMissing=Em Falta nos Dados AT Descarregados
+KreaTaxMatchStatusMissingInDolibarr=Falta
+KreaTaxMatchStatusDiscrepancy=Discrepância
+KreaTaxMatchStatus=Estado
+KreaTaxMatchSupplierInvoicesLoaded=Faturas de fornecedor carregadas: %s
+KreaTaxMatchDocumentsStored=Documentos AT guardados no período selecionado: %s
+KreaTaxMatchNoAtDataDownloaded=Ainda não existem dados AT guardados para este período. Use primeiro o separador Descarga de Dados.
+KreaTaxMatchManualMatchSaved=Correspondência manual guardada.
+KreaTaxMatchManualMatchDeleted=Correspondência manual removida.
+KreaTaxMatchManualNoteSaved=Nota guardada.
+KreaTaxMatchManualMatchLabel=Correspondência manual
+KreaTaxMatchManualMatchNote=Nota manual
+KreaTaxMatchFilterStatusAll=Todos os estados
+KreaTaxMatchFilterSupplierPlaceholder=Fornecedor
+KreaTaxMatchFilterVatPlaceholder=NIF
+KreaTaxMatchFilterRefPlaceholder=Ref. fornecedor
+KreaTaxMatchFilterNotePlaceholder=Nota/Resumo
+
+# Documents tab (AT stored documents)
+KreaTaxMatchDocumentsTitle=Documentos AT KreaTaxMatch
+KreaTaxMatchAtDocumentId=ID Doc. AT
+KreaTaxMatchNoDocuments=Ainda não existem documentos AT guardados para este período.
+KreaTaxMatchFilterNamePlaceholder=Nome do Fornecedor
+
+# Download tab
+KreaTaxMatchDownloadTitle=Descarga AT KreaTaxMatch
+KreaTaxMatchDownloadFilters=Filtro de Datas de Descarga AT
+KreaTaxMatchRunDownload=Descarregar e Guardar
+KreaTaxMatchSyncDone=Sincronização AT concluída. Recebidos: %s, inseridos: %s, atualizados: %s.
+KreaTaxMatchSyncHistory=Histórico de Sincronização
+KreaTaxMatchRowsReceived=Recebidos
+KreaTaxMatchRowsInserted=Inseridos
+KreaTaxMatchRowsUpdated=Atualizados
+KreaTaxMatchNoSyncHistory=Ainda não existe histórico de sincronização.
+KreaTaxMatchBatchStatusDone=Concluído
+KreaTaxMatchBatchStatusError=Erro
+KreaTaxMatchBatchStatusRunning=Em execução
+KreaTaxMatchBatchStatus=Estado
+
+# Match reasons
+KreaTaxMatchReasonAtMissingVatOrRef=A linha AT não fornece NIF do fornecedor e/ou referência da fatura.
+KreaTaxMatchReasonAmountAndDateMismatch=A chave principal corresponde, mas existem diferenças no valor e na data.
+KreaTaxMatchReasonAmountMismatch=A chave principal corresponde, mas o valor é diferente.
+KreaTaxMatchReasonDateMismatch=A chave principal corresponde, mas a data é diferente.
+KreaTaxMatchReasonNoAtMatch=Não foi encontrado documento AT correspondente nos dados descarregados.
+KreaTaxMatchReasonNoDolibarrMatch=Não foi encontrada uma fatura de fornecedor correspondente no Dolibarr.
+KreaTaxMatchReasonApproximateReferenceAmbiguous=Existem candidatos com data e valor exatos, mas a semelhança da referência do fornecedor é demasiado fraca ou ambígua para uma correspondência automática segura.
+KreaTaxMatchReasonManualMatchPreserved=Correspondência manual preservada.
+KreaTaxMatchReasonDolibarrMissingVatOrRef=A fatura no Dolibarr não tem NIF do fornecedor e/ou referência do fornecedor.
+
+# Legacy / shared messages
+KreaTaxMatchCreateDraft=Criar Rascunho
+KreaTaxMatchDraftCreated=Rascunho de fatura de fornecedor criado: %s
+KreaTaxMatchErrorMissingConfig=As credenciais AT não estão configuradas. Configure NIF e palavra-passe na configuração do módulo.
+KreaTaxMatchErrorMissingPassword=Falta a palavra-passe AT. Configure-a na configuração do módulo.

@@ -1,0 +1,84 @@
+# Generic
+ModuleKreaTaxMatchName=KreaTaxMatch
+ModuleKreaTaxMatchDesc=Automates reconciliation between AT e-Fatura purchase records and Dolibarr supplier invoices.
+ModuleKreaTaxMatchDescLong=KreaTaxMatch authenticates against AT e-Fatura, downloads purchase documents for a selected period, stores them with deduplication, matches them against Dolibarr supplier invoices by supplier VAT and supplier reference, highlights discrepancies, preserves manual matches, and supports daily cron synchronization.
+KreaTaxMatchMenu=Tax Match
+KreaTaxMatchInvoiceTab=Invoice Matches
+KreaTaxMatchDownloadTab=Data Download
+KreaTaxMatchDocumentsTab=AT Documents
+KreaTaxMatchDailySyncJob=KreaTaxMatch Daily e-Fatura Synchronization
+
+# Setup / admin
+KreaTaxMatchSetupTitle=KreaTaxMatch Setup
+KreaTaxMatchAtCredentials=AT Credentials (e-Fatura)
+KreaTaxMatchAtNif=NIF AT
+KreaTaxMatchAtNifHelp=Portuguese tax number used to authenticate against e-Fatura.
+KreaTaxMatchAtPassword=AT Password
+KreaTaxMatchAtPasswordHelp=Leave empty to keep the current password.
+KreaTaxMatchPasswordConfigured=Password configured: %s
+KreaTaxMatchCronLookbackDays=Cron Lookback Days
+KreaTaxMatchCronLookbackDaysHelp=The daily cron downloads this number of recent days to keep AT data current without duplicating rows.
+KreaTaxMatchErrorInvalidNif=The AT NIF must contain exactly 9 digits.
+KreaTaxMatchErrorInvalidCronLookbackDays=Lookback days must be between 1 and 31.
+KreaTaxMatchAboutTitle=About KreaTaxMatch
+
+# Dashboard (Invoice Matches)
+KreaTaxMatchDashboardTitle=KreaTaxMatch Invoice Reconciliation
+KreaTaxMatchFilterTitle=Invoice Date Filter
+KreaTaxMatchStatusMatched=Matched
+KreaTaxMatchStatusManual=Manual
+KreaTaxMatchStatusMissing=Missing from Downloaded AT Data
+KreaTaxMatchStatusMissingInDolibarr=Missing
+KreaTaxMatchStatusDiscrepancy=Discrepancy
+KreaTaxMatchStatus=Status
+KreaTaxMatchSupplierInvoicesLoaded=Supplier invoices loaded: %s
+KreaTaxMatchDocumentsStored=AT documents stored for the selected period: %s
+KreaTaxMatchNoAtDataDownloaded=No AT data is stored yet for this period. Use the Data Download tab first.
+KreaTaxMatchManualMatchSaved=Manual match saved.
+KreaTaxMatchManualMatchDeleted=Manual match removed.
+KreaTaxMatchManualNoteSaved=Note saved.
+KreaTaxMatchManualMatchLabel=Manual Match
+KreaTaxMatchManualMatchNote=Manual Note
+KreaTaxMatchFilterStatusAll=All Statuses
+KreaTaxMatchFilterSupplierPlaceholder=Supplier
+KreaTaxMatchFilterVatPlaceholder=NIF
+KreaTaxMatchFilterRefPlaceholder=Supplier Ref.
+KreaTaxMatchFilterNotePlaceholder=Note/Summary
+
+# Documents tab (AT stored documents)
+KreaTaxMatchDocumentsTitle=KreaTaxMatch AT Documents
+KreaTaxMatchAtDocumentId=AT Document ID
+KreaTaxMatchNoDocuments=No AT documents are stored yet for this period.
+KreaTaxMatchFilterNamePlaceholder=Supplier Name
+
+# Download tab
+KreaTaxMatchDownloadTitle=KreaTaxMatch AT Download
+KreaTaxMatchDownloadFilters=AT Download Date Filter
+KreaTaxMatchRunDownload=Download and Store
+KreaTaxMatchSyncDone=AT synchronization completed. Received: %s, inserted: %s, updated: %s.
+KreaTaxMatchSyncHistory=Synchronization History
+KreaTaxMatchRowsReceived=Received
+KreaTaxMatchRowsInserted=Inserted
+KreaTaxMatchRowsUpdated=Updated
+KreaTaxMatchNoSyncHistory=There is no synchronization history yet.
+KreaTaxMatchBatchStatusDone=Done
+KreaTaxMatchBatchStatusError=Error
+KreaTaxMatchBatchStatusRunning=Running
+KreaTaxMatchBatchStatus=Status
+
+# Match reasons
+KreaTaxMatchReasonAtMissingVatOrRef=The AT row does not provide the supplier VAT number and/or supplier invoice reference.
+KreaTaxMatchReasonAmountAndDateMismatch=The primary key matches, but the amount and date differ.
+KreaTaxMatchReasonAmountMismatch=The primary key matches, but the amount differs.
+KreaTaxMatchReasonDateMismatch=The primary key matches, but the date differs.
+KreaTaxMatchReasonNoAtMatch=No matching AT document was found in the downloaded data.
+KreaTaxMatchReasonNoDolibarrMatch=No matching supplier invoice was found in Dolibarr.
+KreaTaxMatchReasonApproximateReferenceAmbiguous=Exact date and amount candidates exist, but supplier reference similarity is too weak or too ambiguous for safe automatic matching.
+KreaTaxMatchReasonManualMatchPreserved=Manual match preserved.
+KreaTaxMatchReasonDolibarrMissingVatOrRef=The Dolibarr invoice does not provide the supplier VAT number and/or supplier reference.
+
+# Legacy / shared messages
+KreaTaxMatchCreateDraft=Create Draft
+KreaTaxMatchDraftCreated=Supplier invoice draft created: %s
+KreaTaxMatchErrorMissingConfig=AT credentials are not configured. Configure the NIF and password in module setup.
+KreaTaxMatchErrorMissingPassword=AT password is missing. Configure it in module setup.
