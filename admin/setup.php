@@ -71,6 +71,7 @@ if ($action === 'save') {
 	$atNif = preg_replace('/[^0-9]/', '', (string) GETPOST('KREATAXMATCH_AT_NIF', 'alphanohtml'));
 	$atPassword = GETPOST('KREATAXMATCH_AT_PASSWORD', 'password');
 	$cronLookbackDays = (int) GETPOST('KREATAXMATCH_CRON_LOOKBACK_DAYS', 'int');
+	$accountingColumnEnabled = GETPOSTINT('KREATAXMATCH_ENABLE_ACCOUNTING_COLUMN') ? 1 : 0;
 
 	$error = 0;
 	if (!preg_match('/^[0-9]{9}$/', (string) $atNif)) {
@@ -100,6 +101,11 @@ if ($action === 'save') {
 		if ($resultLookback <= 0) {
 			$error++;
 		}
+
+		$resultAccountingColumn = dolibarr_set_const($db, 'KREATAXMATCH_ENABLE_ACCOUNTING_COLUMN', (string) $accountingColumnEnabled, 'yesno', 0, '', $conf->entity);
+		if ($resultAccountingColumn <= 0) {
+			$error++;
+		}
 	}
 
 	if ($error) {
@@ -117,6 +123,7 @@ $configuredCronLookbackDays = (int) getDolGlobalInt('KREATAXMATCH_CRON_LOOKBACK_
 if ($configuredCronLookbackDays <= 0) {
 	$configuredCronLookbackDays = 2;
 }
+$configuredAccountingColumnEnabled = getDolGlobalInt('KREATAXMATCH_ENABLE_ACCOUNTING_COLUMN', 1) > 0 ? 1 : 0;
 
 $title = 'KreaTaxMatchSetupTitle';
 
@@ -161,6 +168,14 @@ print '<td class="fieldrequired">' . $langs->trans('KreaTaxMatchCronLookbackDays
 print '<td>';
 print '<input type="number" class="flat width100" name="KREATAXMATCH_CRON_LOOKBACK_DAYS" value="' . ((int) $configuredCronLookbackDays) . '" min="1" max="31">';
 print '<div class="opacitymedium">' . $langs->trans('KreaTaxMatchCronLookbackDaysHelp') . '</div>';
+print '</td>';
+print '</tr>';
+
+print '<tr class="oddeven">';
+print '<td>' . $langs->trans('KreaTaxMatchSentToAccountant') . '</td>';
+print '<td>';
+print '<input type="checkbox" class="flat" name="KREATAXMATCH_ENABLE_ACCOUNTING_COLUMN" value="1"' . ($configuredAccountingColumnEnabled ? ' checked' : '') . '>';
+print '<div class="opacitymedium">' . $langs->trans('KreaTaxMatchAccountingFeatureHelp') . '</div>';
 print '</td>';
 print '</tr>';
 

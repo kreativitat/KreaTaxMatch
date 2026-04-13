@@ -288,6 +288,10 @@ class KreaTaxMatchMatcher
 		if (isset($document['__at_document_id']) && is_scalar($document['__at_document_id'])) {
 			$atDocumentId = (int) $document['__at_document_id'];
 		}
+		$sentToAccountant = 0;
+		if (!empty($document['__sent_to_accountant'])) {
+			$sentToAccountant = 1;
+		}
 
 		return array(
 			'supplier_vat' => $supplierVat,
@@ -297,6 +301,7 @@ class KreaTaxMatchMatcher
 			'total_ttc' => $totalTtc,
 			'stored_rowid' => $storedRowId,
 			'at_document_id' => $atDocumentId,
+			'sent_to_accountant' => $sentToAccountant,
 			'raw' => $document,
 		);
 	}

@@ -156,7 +156,7 @@ class KreaTaxMatchService
 	{
 		$this->ensureStorageSchema();
 
-		$sql = "SELECT rowid, at_document_id, supplier_vat, supplier_name, supplier_ref, invoice_date, total_ttc, raw_payload";
+		$sql = "SELECT rowid, at_document_id, supplier_vat, supplier_name, supplier_ref, invoice_date, total_ttc, sent_to_accountant, raw_payload";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "kreataxmatch_document";
 		$sql .= " WHERE entity IN (" . $this->matchingEntityList() . ")";
 		if ($dateFrom !== '') {
@@ -182,6 +182,7 @@ class KreaTaxMatchService
 			// Internal metadata to preserve a stable row identifier across synchronizations.
 			$raw['__stored_rowid'] = (int) $obj->rowid;
 			$raw['__at_document_id'] = (int) $obj->at_document_id;
+			$raw['__sent_to_accountant'] = !empty($obj->sent_to_accountant) ? 1 : 0;
 
 			if (!isset($raw['nifEmitente']) && (string) $obj->supplier_vat !== '') {
 				$raw['nifEmitente'] = $obj->supplier_vat;
@@ -261,7 +262,7 @@ class KreaTaxMatchService
 		$limit  = max(0, (int) $limit);
 		$offset = max(0, (int) $offset);
 
-		$sql = "SELECT rowid, at_document_id, supplier_vat, supplier_name, supplier_ref, invoice_date, total_ttc";
+		$sql = "SELECT rowid, at_document_id, supplier_vat, supplier_name, supplier_ref, invoice_date, total_ttc, sent_to_accountant";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "kreataxmatch_document";
 		$sql .= " WHERE entity IN (" . $this->matchingEntityList() . ")";
 		$sql .= $this->buildAtDocumentFilterSql($dateFrom, $dateTo, $searchVat, $searchName, $searchRef);
@@ -285,6 +286,7 @@ class KreaTaxMatchService
 				'supplier_ref'   => (string) $obj->supplier_ref,
 				'invoice_date'   => (string) $obj->invoice_date,
 				'total_ttc'      => ($obj->total_ttc !== null) ? (float) $obj->total_ttc : null,
+				'sent_to_accountant' => !empty($obj->sent_to_accountant) ? 1 : 0,
 			);
 		}
 		$this->db->free($resql);
@@ -505,6 +507,42 @@ class KreaTaxMatchService
 	}
 
 	/**
+	 * Save the accountant-delivery flag for one stored AT document.
+	 *
+	 * @param int $documentRowId
+	 * @param int $sentToAccountant
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function saveDocumentSentToAccountant($documentRowId, $sentToAccountant = 0)
+	{
+		$this->ensureStorageSchema();
+
+		$documentRowId = (int) $documentRowId;
+		$sentToAccountant = !empty($sentToAccountant) ? 1 : 0;
+		if ($documentRowId <= 0) {
+			throw new Exception('Invalid accountant-delivery parameters.');
+		}
+
+		$documentEntity = $this->getStoredDocumentEntity($documentRowId);
+		if ($documentEntity <= 0) {
+			throw new Exception('Stored AT document was not found for visible entities.');
+		}
+
+		$sql = "UPDATE " . MAIN_DB_PREFIX . "kreataxmatch_document";
+		$sql .= " SET sent_to_accountant=" . $sentToAccountant;
+		$sql .= " WHERE rowid=" . $documentRowId;
+		$sql .= " AND entity=" . $documentEntity;
+
+		$resql = $this->db->query($sql);
+		if (!$resql) {
+			throw new Exception('Unable to update accountant-delivery flag: ' . $this->db->lasterror());
+		}
+
+		return true;
+	}
+
+	/**
 	 * Normalize operator notes to a stable size accepted by the reconciliation UI.
 	 *
 	 * @param mixed $note
@@ -631,7 +669,7 @@ class KreaTaxMatchService
 
 		$sql = "SELECT m.rowid AS match_rowid, m.fk_facture_fourn, m.fk_document, m.note_private,";
 		$sql .= " d.raw_payload, d.rowid AS document_rowid, d.at_document_id, d.supplier_vat, d.supplier_name,";
-		$sql .= " d.supplier_ref, d.invoice_date, d.total_ttc";
+		$sql .= " d.supplier_ref, d.invoice_date, d.total_ttc, d.sent_to_accountant";
 		$sql .= " FROM " . MAIN_DB_PREFIX . "kreataxmatch_manual_match AS m";
 		$sql .= " INNER JOIN " . MAIN_DB_PREFIX . "kreataxmatch_document AS d ON d.rowid = m.fk_document AND d.entity = m.entity";
 		$sql .= " INNER JOIN " . MAIN_DB_PREFIX . "facture_fourn AS f ON f.rowid = m.fk_facture_fourn";
@@ -654,6 +692,7 @@ class KreaTaxMatchService
 
 			$raw['__stored_rowid'] = (int) $obj->document_rowid;
 			$raw['__at_document_id'] = (int) $obj->at_document_id;
+			$raw['__sent_to_accountant'] = !empty($obj->sent_to_accountant) ? 1 : 0;
 			if (!isset($raw['nifEmitente']) && (string) $obj->supplier_vat !== '') {
 				$raw['nifEmitente'] = $obj->supplier_vat;
 			}
@@ -1361,6 +1400,7 @@ class KreaTaxMatchService
 				date_downloaded DATETIME NOT NULL,
 				date_last_seen DATETIME NOT NULL,
 				fk_last_batch INTEGER NULL,
+				sent_to_accountant TINYINT(1) NOT NULL DEFAULT 0,
 				datec DATETIME NOT NULL,
 				tms TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 				UNIQUE KEY uk_kreataxmatch_doc_entity_id (entity, at_document_id),
@@ -1391,6 +1431,7 @@ class KreaTaxMatchService
 		}
 
 		$this->ensureNullableManualMatchInvoiceColumn();
+		$this->ensureSentToAccountantColumn();
 
 		self::$schemaChecked = true;
 	}
@@ -1417,6 +1458,49 @@ class KreaTaxMatchService
 			$resql = $this->db->query($sql);
 			if (!$resql) {
 				throw new Exception('Unable to migrate manual match schema for note-only rows: ' . $this->db->lasterror());
+			}
+		}
+	}
+
+	/**
+	 * Ensure accountant-delivery tracking exists for upgraded databases.
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	private function ensureSentToAccountantColumn()
+	{
+		$sql = "SHOW COLUMNS FROM " . MAIN_DB_PREFIX . "kreataxmatch_document LIKE 'sent_to_accountant'";
+		$resql = $this->db->query($sql);
+		if (!$resql) {
+			throw new Exception('Unable to inspect AT document schema: ' . $this->db->lasterror());
+		}
+
+		$column = $this->db->fetch_object($resql);
+		$this->db->free($resql);
+
+		if (!$column) {
+			$sql = "ALTER TABLE " . MAIN_DB_PREFIX . "kreataxmatch_document ADD COLUMN sent_to_accountant TINYINT(1) NOT NULL DEFAULT 0 AFTER fk_last_batch";
+			$resql = $this->db->query($sql);
+			if (!$resql) {
+				throw new Exception('Unable to add accountant-delivery flag to stored AT documents: ' . $this->db->lasterror());
+			}
+			return;
+		}
+
+		$mustNormalize = false;
+		if (isset($column->Null) && strtoupper((string) $column->Null) !== 'NO') {
+			$mustNormalize = true;
+		}
+		if (!isset($column->Default) || (string) $column->Default !== '0') {
+			$mustNormalize = true;
+		}
+
+		if ($mustNormalize) {
+			$sql = "ALTER TABLE " . MAIN_DB_PREFIX . "kreataxmatch_document MODIFY sent_to_accountant TINYINT(1) NOT NULL DEFAULT 0";
+			$resql = $this->db->query($sql);
+			if (!$resql) {
+				throw new Exception('Unable to normalize accountant-delivery flag schema: ' . $this->db->lasterror());
 			}
 		}
 	}

@@ -169,6 +169,8 @@ if ($searchNote !== '') {
 $service  = new KreaTaxMatchService($db);
 $matcher  = new KreaTaxMatchMatcher();
 $canWrite = $user->hasRight('kreataxmatch', 'match', 'write');
+$showAccountingColumn = (getDolGlobalInt('KREATAXMATCH_ENABLE_ACCOUNTING_COLUMN', 1) > 0);
+$isAjaxRequest = (GETPOST('ajax', 'aZ09') === '1');
 
 // ---------------------------------------------------------------------------
 // Helper: build redirect URL preserving full list state (filter + sort + page)
@@ -208,6 +210,22 @@ $buildRedirectUrl = static function ($pageNum) use ($mainmenu, $leftmenu, $dateS
 		$url .= '&search_note='     . urlencode($searchNote);
 	}
 	return $url;
+};
+
+$respondJson = static function (array $payload, $statusCode = 200) {
+	if (!headers_sent()) {
+		http_response_code((int) $statusCode);
+		header('Content-Type: application/json; charset=UTF-8');
+		header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+	}
+
+	$json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+	if ($json === false) {
+		$json = '{"success":false,"error":"JSON encoding error."}';
+	}
+
+	print $json;
+	exit;
 };
 
 // ---------------------------------------------------------------------------
@@ -253,6 +271,51 @@ if ($action === 'save_manual_note') {
 		setEventMessages($langs->trans('KreaTaxMatchManualNoteSaved'), null, 'mesgs');
 	} catch (Exception $e) {
 		dol_syslog('KreaTaxMatch save document note error: ' . $e->getMessage(), LOG_ERR);
+		setEventMessages($e->getMessage(), null, 'errors');
+	}
+
+	header('Location: ' . $buildRedirectUrl($page));
+	exit;
+}
+
+if ($action === 'save_document_sent_to_accountant') {
+	if (!$canWrite) {
+		if ($isAjaxRequest) {
+			$respondJson(array('success' => false, 'error' => $langs->trans('ErrorForbidden')), 403);
+		}
+		accessforbidden();
+	}
+	if (!$showAccountingColumn) {
+		if ($isAjaxRequest) {
+			$respondJson(array('success' => false, 'error' => $langs->trans('ErrorForbidden')), 403);
+		}
+		accessforbidden();
+	}
+	if (!kreataxmatchIsTokenValid()) {
+		if ($isAjaxRequest) {
+			$respondJson(array('success' => false, 'error' => 'Invalid CSRF token'), 403);
+		}
+		accessforbidden('Invalid CSRF token');
+	}
+
+	$documentRowId = (int) GETPOST('document_rowid', 'int');
+	$sentToAccountant = GETPOSTINT('sent_to_accountant') ? 1 : 0;
+
+	try {
+		$service->saveDocumentSentToAccountant($documentRowId, $sentToAccountant);
+		if ($isAjaxRequest) {
+			$respondJson(array(
+				'success' => true,
+				'sent_to_accountant' => $sentToAccountant,
+				'message' => $langs->trans('KreaTaxMatchSentToAccountantSaved'),
+			));
+		}
+		setEventMessages($langs->trans('KreaTaxMatchSentToAccountantSaved'), null, 'mesgs');
+	} catch (Exception $e) {
+		dol_syslog('KreaTaxMatch save accountant-delivery flag error: ' . $e->getMessage(), LOG_ERR);
+		if ($isAjaxRequest) {
+			$respondJson(array('success' => false, 'error' => $e->getMessage()), 500);
+		}
 		setEventMessages($e->getMessage(), null, 'errors');
 	}
 
@@ -486,6 +549,35 @@ print '<style>
 .mod-kreataxmatch.page-dashboard td.krea-note-cell .opacitymedium {
 	display: inline-block;
 	min-height: 1.2em;
+}
+.mod-kreataxmatch.page-dashboard .krea-sent-cell {
+	width: 120px;
+	min-width: 120px;
+	text-align: center;
+	white-space: nowrap;
+}
+.mod-kreataxmatch.page-dashboard .krea-sent-form {
+	margin: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.mod-kreataxmatch.page-dashboard .krea-sent-form.krea-is-saving {
+	opacity: .55;
+}
+.mod-kreataxmatch.page-dashboard .krea-sent-form.krea-save-ok {
+	animation: krea-sent-save-flash .7s ease-out;
+}
+.mod-kreataxmatch.page-dashboard .krea-sent-checkbox {
+	cursor: pointer;
+}
+@keyframes krea-sent-save-flash {
+	0% {
+		background-color: rgba(47, 158, 68, .22);
+	}
+	100% {
+		background-color: transparent;
+	}
 }
 </style>' . "\n";
 
@@ -803,7 +895,11 @@ if ($matchResult !== null && is_array($matchResult)) {
 		print '</td>';
 		// Col 9 – Action: no direct filter
 		print '<td class="liste_titre">&nbsp;</td>';
-		// Col 10 – Note + search/reset buttons aligned to the extreme right
+		if ($showAccountingColumn) {
+			// Col 10 – Accountant checkbox: no direct filter
+			print '<td class="liste_titre krea-sent-cell">&nbsp;</td>';
+		}
+		// Last col – Note + search/reset buttons aligned to the extreme right
 		print '<td class="liste_titre krea-note-filter-cell">';
 		print '<div class="krea-note-filter-wrap">';
 		print '<input class="flat" type="text" name="search_note" value="' . dol_escape_htmltag($searchNote) . '" placeholder="' . dol_escape_htmltag($langs->trans('KreaTaxMatchFilterNotePlaceholder')) . '" form="searchFormList">';
@@ -828,6 +924,9 @@ if ($matchResult !== null && is_array($matchResult)) {
 		print_liste_field_titre($langs->trans('AmountTTC') . ' (AT)',       $_SERVER['PHP_SELF'], 'at_amount',      '', $param, 'class="right"', $sortfield, $sortorder);
 		print_liste_field_titre($langs->trans('SupplierInvoice'),           $_SERVER['PHP_SELF'], 'dol_ref',        '', $param, '',              $sortfield, $sortorder);
 		print_liste_field_titre($langs->trans('Action'),                    '',                   '',               '', '',     'class="center"');
+		if ($showAccountingColumn) {
+			print_liste_field_titre($langs->trans('KreaTaxMatchSentToAccountant'), '',             '',               '', '',     'class="center"');
+		}
 		print_liste_field_titre($langs->trans('Note'),                      $_SERVER['PHP_SELF'], 'note',           '', $param, '',              $sortfield, $sortorder);
 		print '</tr>';
 
@@ -839,6 +938,7 @@ if ($matchResult !== null && is_array($matchResult)) {
 		$dol         = (isset($row['dolibarr']) && is_array($row['dolibarr'])) ? $row['dolibarr'] : array();
 		$manualMatch = !empty($row['manual_match']);
 		$manualNote  = isset($row['manual_match_note']) ? (string) $row['manual_match_note'] : '';
+		$sentToAccountant = ($at !== null && !empty($at['sent_to_accountant'])) ? 1 : 0;
 
 		$statusLabel = isset($statusLabels[$status]) ? $statusLabels[$status] : $status;
 		$statusColor = '#f08c00';
@@ -988,7 +1088,42 @@ if ($matchResult !== null && is_array($matchResult)) {
 			print '</div>';
 			print '</td>';
 
-			// Col 10 – Note / reason
+			if ($showAccountingColumn) {
+				// Col 10 – Sent to accountant
+				print '<td class="krea-sent-cell">';
+				if ($documentRowId > 0 && $canWrite) {
+					print '<form method="POST" action="' . dol_escape_htmltag($_SERVER['PHP_SELF']) . '" class="krea-sent-form">';
+					print '<input type="hidden" name="token"           value="' . newToken() . '">';
+					print '<input type="hidden" name="action"          value="save_document_sent_to_accountant">';
+					print '<input type="hidden" name="mainmenu"        value="' . dol_escape_htmltag($mainmenu !== '' ? $mainmenu : 'billing') . '">';
+					print '<input type="hidden" name="leftmenu"        value="' . dol_escape_htmltag($leftmenu !== '' ? $leftmenu : 'kreataxmatch') . '">';
+					print '<input type="hidden" name="date_start"      value="' . dol_escape_htmltag($dateStart) . '">';
+					print '<input type="hidden" name="date_end"        value="' . dol_escape_htmltag($dateEnd) . '">';
+					print '<input type="hidden" name="page"            value="' . ((int) $page) . '">';
+					print '<input type="hidden" name="limit"           value="' . ((int) $limit) . '">';
+					print '<input type="hidden" name="sortfield"       value="' . dol_escape_htmltag($sortfield) . '">';
+					print '<input type="hidden" name="sortorder"       value="' . dol_escape_htmltag($sortorder) . '">';
+					print '<input type="hidden" name="search_status"   value="' . dol_escape_htmltag($searchStatus) . '">';
+					print '<input type="hidden" name="search_supplier" value="' . dol_escape_htmltag($searchSupplier) . '">';
+					print '<input type="hidden" name="search_vat"      value="' . dol_escape_htmltag($searchVat) . '">';
+					print '<input type="hidden" name="search_ref"      value="' . dol_escape_htmltag($searchRef) . '">';
+					print '<input type="hidden" name="search_amount"   value="' . dol_escape_htmltag($searchAmount) . '">';
+					print '<input type="hidden" name="search_dol_ref"  value="' . dol_escape_htmltag($searchDolRef) . '">';
+					print '<input type="hidden" name="search_note"     value="' . dol_escape_htmltag($searchNote) . '">';
+					print '<input type="hidden" name="document_rowid"  value="' . $documentRowId . '">';
+					print '<input type="hidden" name="sent_to_accountant" value="' . $sentToAccountant . '">';
+					print '<input type="checkbox" class="flat krea-sent-checkbox" value="1"' . ($sentToAccountant ? ' checked' : '') . ' title="' . dol_escape_htmltag($langs->trans('KreaTaxMatchSentToAccountant')) . '" aria-label="' . dol_escape_htmltag($langs->trans('KreaTaxMatchSentToAccountant')) . '">';
+					print '<noscript><button type="submit" class="krea-inline-icon-btn" title="' . dol_escape_htmltag($langs->trans('Save')) . '"><span class="fas fa-save"></span></button></noscript>';
+					print '</form>';
+				} elseif ($documentRowId > 0) {
+					print '<input type="checkbox" class="flat" value="1"' . ($sentToAccountant ? ' checked' : '') . ' disabled title="' . dol_escape_htmltag($langs->trans('KreaTaxMatchSentToAccountant')) . '" aria-label="' . dol_escape_htmltag($langs->trans('KreaTaxMatchSentToAccountant')) . '">';
+				} else {
+					print '<span class="opacitymedium">-</span>';
+				}
+				print '</td>';
+			}
+
+			// Last col – Note / reason
 			if ($reason !== '') {
 				$t      = $langs->trans($reason);
 				$reason = ($t !== $reason) ? $t : $reason;
@@ -1084,6 +1219,46 @@ jQuery(function ($) {
 
 		$("#" + editorId).hide();
 		$("#" + viewId).css("display", "flex");
+	});
+
+	$(document).off("change.kreaSentCheckbox", ".krea-sent-checkbox").on("change.kreaSentCheckbox", ".krea-sent-checkbox", function () {
+		var $checkbox = $(this);
+		var $form = $checkbox.closest(".krea-sent-form");
+		var newValue = $checkbox.is(":checked") ? 1 : 0;
+		var previousValue = newValue ? 0 : 1;
+
+		if (!$form.length || $checkbox.data("busy")) {
+			return;
+		}
+
+		$form.find("input[name=\'sent_to_accountant\']").val(newValue);
+		$checkbox.data("busy", true).prop("disabled", true);
+		$form.addClass("krea-is-saving").removeClass("krea-save-ok");
+
+		$.ajax({
+			url: $form.attr("action"),
+			type: "POST",
+			dataType: "json",
+			data: $form.serialize() + "&ajax=1"
+		}).done(function (response) {
+			if (!response || !response.success) {
+				$checkbox.prop("checked", previousValue === 1);
+				window.alert(response && response.error ? response.error : "' . dol_escape_js($langs->trans('KreaTaxMatchSentToAccountantAjaxError')) . '");
+				return;
+			}
+
+			$form.addClass("krea-save-ok");
+			window.setTimeout(function () {
+				$form.removeClass("krea-save-ok");
+			}, 900);
+		}).fail(function (xhr) {
+			var response = xhr && xhr.responseJSON ? xhr.responseJSON : null;
+			$checkbox.prop("checked", previousValue === 1);
+			window.alert(response && response.error ? response.error : "' . dol_escape_js($langs->trans('KreaTaxMatchSentToAccountantAjaxError')) . '");
+		}).always(function () {
+			$checkbox.data("busy", false).prop("disabled", false);
+			$form.removeClass("krea-is-saving");
+		});
 	});
 });
 </script>';

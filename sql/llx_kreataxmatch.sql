@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS llx_kreataxmatch_document (
 	date_downloaded DATETIME NOT NULL,
 	date_last_seen DATETIME NOT NULL,
 	fk_last_batch INTEGER NULL,
+	sent_to_accountant TINYINT(1) NOT NULL DEFAULT 0,
 	datec DATETIME NOT NULL,
 	tms TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	UNIQUE KEY uk_kreataxmatch_doc_entity_id (entity, at_document_id),

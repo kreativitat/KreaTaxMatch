@@ -38,7 +38,7 @@ class modKreaTaxMatch extends DolibarrModules
 		$this->descriptionlong = 'ModuleKreaTaxMatchDescLong';
 		$this->editor_name = 'Kreativität Works';
 		$this->editor_url = 'https://kreativitat.com';
-		$this->version = '1.5.17';
+		$this->version = '1.6.2';
 		$this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
 		$this->picto = 'kreataxmatch@kreataxmatch';
 
@@ -77,6 +77,7 @@ class modKreaTaxMatch extends DolibarrModules
 			array('KREATAXMATCH_AT_NIF', 'chaine', '', 'Portuguese Tax Authority NIF used for e-Fatura login', 1, 'current', 0),
 			array('KREATAXMATCH_AT_PASSWORD', 'chaine', '', 'Encrypted Portuguese Tax Authority password used for e-Fatura login', 0, 'current', 0),
 			array('KREATAXMATCH_CRON_LOOKBACK_DAYS', 'integer', '2', 'Number of days rechecked by daily cron synchronization', 1, 'current', 0),
+			array('KREATAXMATCH_ENABLE_ACCOUNTING_COLUMN', 'yesno', '1', 'Enable the accounting checkbox column in the reconciliation workspace', 1, 'current', 0),
 		);
 
 		if (!isModEnabled('kreataxmatch')) {
